@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: data-inserter
+  namespace: {{.Values.namespace.name}}
+spaec:
+  schedule: {{.Values.cronjobs.dataInsert.schedule}}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: insert
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              env:
+                - name: PGUSER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-user
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-password
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-db
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  psql -h postgres -c "INSERT INTO test (data) VALUES ('auto');"
+          restartPolicy: OnFailure

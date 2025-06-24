@@ -1,0 +1,12 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-cli-to-db
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/secure-db-platform/sa/user-dev"]

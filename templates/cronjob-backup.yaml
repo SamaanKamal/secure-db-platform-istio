@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: data-backup
+  namespace: {{.Values.namespace.name}}
+spaec:
+  schedule: {{.Values.cronjobs.backup.schedule}}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  PGPASSWORD={{ .Values.postgresql.password }} pg_dump -h postgres -U {{ .Values.postgresql.user }} {{ .Values.postgresql.db }} > /backup/db.sql
+              volumeMounts:
+                - name: backup-volume
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: backup-volume
+              emptyDir: {}
