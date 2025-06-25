@@ -6,6 +6,7 @@ metadata:
   labels: 
     app: user-cli
 spec:
+  serviceAccountName: user-dev
   containers:
     - name: user-cli-container
       image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"

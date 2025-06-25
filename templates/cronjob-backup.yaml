@@ -3,12 +3,13 @@ kind: CronJob
 metadata:
   name: data-backup
   namespace: {{.Values.namespace.name}}
-spaec:
-  schedule: {{.Values.cronjobs.backup.schedule}}
+spec:
+  schedule: "{{.Values.cronjobs.backup.schedule}}"
   jobTemplate:
     spec:
       template:
         spec:
+          serviceAccountName: user-dev
           containers:
             - name: backup
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -16,10 +17,31 @@ spaec:
                 - /bin/sh
                 - -c
                 - |
-                  PGPASSWORD={{ .Values.postgresql.password }} pg_dump -h postgres -U {{ .Values.postgresql.user }} {{ .Values.postgresql.db }} > /backup/db.sql
+                  until pg_isready -h service-mesh-database  -U $PGUSER; do
+                  echo 'waiting for PostgreSQL to be connectable...'
+                  sleep 2
+                  done
+                  pg_dump -h service-mesh-database -U "$PGUSER" "$PGDATABASE" > /backup/db.sql
+                  sleep 300
+              env:
+                - name: PGUSER  
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-user
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-password
+                - name: PGDATABASE
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-secret
+                      key: postgres-db
               volumeMounts:
                 - name: backup-volume
-                  mountPath: /backup
+                  mountPath: /backup/
           restartPolicy: OnFailure
           volumes:
             - name: backup-volume

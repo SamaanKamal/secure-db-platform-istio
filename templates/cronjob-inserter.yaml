@@ -3,12 +3,13 @@ kind: CronJob
 metadata:
   name: data-inserter
   namespace: {{.Values.namespace.name}}
-spaec:
-  schedule: {{.Values.cronjobs.dataInsert.schedule}}
+spec:
+  schedule: "{{.Values.cronjobs.dataInsert.schedule}}"
   jobTemplate:
     spec:
       template:
         spec:
+          serviceAccountName: user-dev
           containers:
             - name: insert
               image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -32,5 +33,5 @@ spaec:
                 - /bin/sh
                 - -c
                 - |
-                  psql -h postgres -c "INSERT INTO test (data) VALUES ('auto');"
+                  psql -h service-mesh-database -c "INSERT INTO test (data) VALUES ('auto');"
           restartPolicy: OnFailure

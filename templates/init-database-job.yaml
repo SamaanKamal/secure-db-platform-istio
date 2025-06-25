@@ -1,0 +1,40 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+  namespace: {{ .Values.namespace.name }}
+spec:
+  template:
+    spec:
+      serviceAccountName: user-dev
+      containers:
+        - name: db-init
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              export PGPASSWORD=$PGPASSWORD && \
+              psql -h service-mesh-database -U $PGUSER -d $PGDATABASE -c \
+              "CREATE TABLE IF NOT EXISTS test (
+                id SERIAL PRIMARY KEY,
+                data VARCHAR(255),
+                inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              );"
+          env:
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-user
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-password
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: postgres-db
+      restartPolicy: OnFailure

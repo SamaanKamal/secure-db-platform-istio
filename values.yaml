@@ -11,7 +11,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: latest
+  tag: 15
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
@@ -147,8 +147,6 @@ istio:
 
 cronjobs:
   dataInsert:
-    schedule: "0 * * * *"
+    schedule: "*/5 * * * *" # every 5 minutes to balance frequency and load
   backup:
-    schedule: "0 0 * * *"
-    # storage:
-    #   size: 10Gi
+    schedule: "0 0 * * *" # once daily at midnight for less system strain

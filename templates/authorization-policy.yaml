@@ -2,10 +2,11 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: allow-cli-to-db
+  namespace: {{ .Values.namespace.name }}
 spec:
   selector:
     matchLabels:
-      app: postgres
+      app.kubernetes.io/name: service-mesh-database
   rules:
     - from:
         - source:

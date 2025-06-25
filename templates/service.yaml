@@ -9,9 +9,8 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      # targetPort: http
       targetPort: {{ .Values.service.port }}
       protocol: TCP
-      name: http
+      name: postgres
   selector:
     {{- include "service-mesh-database.selectorLabels" . | nindent 4 }}
