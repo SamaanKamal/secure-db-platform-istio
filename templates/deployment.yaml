@@ -71,8 +71,6 @@ spec:
         - name: postgres-storage
           persistentVolumeClaim:
             claimName: postgres-pvc
-        - name: tls-certs
-          secret:
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
